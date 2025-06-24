@@ -8,18 +8,18 @@ namespace Store.Web.Extension
         {
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("V1", new OpenApiInfo
+                options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "Store API",
                     Version = "v1",
-                    Contact =
+                    Contact = new OpenApiContact
                     {
                         Name = "Zaki",
                         Email = "zaki@gmail.com",
-                        Url = new Uri("#")
+                        Url = new Uri("https://example.com")
                     }
-
                 });
+
 
                 var securityScheme = new OpenApiSecurityScheme
                 {

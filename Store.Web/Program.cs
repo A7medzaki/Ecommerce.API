@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using Store.Data.Contexts;
+using Store.Web.Extension;
 using Store.Web.Helper;
 using Store.Web.Middleware;
-using Store.Web.Extension;
-using StackExchange.Redis;
 
 namespace Store.Web
 {
@@ -17,15 +17,19 @@ namespace Store.Web
 
             builder.Services.AddControllers();
 
-            builder.Services.AddDbContext<StoreDbContext>(options =>
-            {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-            });
-            
-            builder.Services.AddDbContext<StoreIdentityDbContext>(options =>
-            {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
-            });
+            //builder.Services.AddDbContext<StoreDbContext>(options =>
+            //{
+            //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            //});
+
+            //builder.Services.AddDbContext<StoreIdentityDbContext>(options =>
+            //{
+            //    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
+            //});
+
+            builder.Services.AddDbContext<StoreDbContext>(options => options.UseInMemoryDatabase("TempDb"));
+            builder.Services.AddDbContext<StoreIdentityDbContext>(options => options.UseInMemoryDatabase("IdentityTempDb"));
+
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
             {
@@ -40,7 +44,7 @@ namespace Store.Web
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerDocumentation();
 
             builder.Services.AddCors(options =>
             {
@@ -55,11 +59,13 @@ namespace Store.Web
             await ApplySeeding.ApplySeedingAsync(app);
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Store API v1");
+                c.RoutePrefix = string.Empty;
+            });
 
             app.UseMiddleware<ExceptionMiddleware>();
 

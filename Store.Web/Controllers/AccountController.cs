@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Store.Data.Entities.IdentityEntities;
 using Store.Service.HandleResponses;
@@ -40,13 +41,19 @@ namespace Store.Web.Controllers
             return Ok(user);
         }
 
-
+        [Authorize]
         [HttpGet]
-        public async Task<UserDTO> GetCurrentDetails()
+        public async Task<ActionResult<UserDTO>> GetCurrentDetails()
         {
-            var userId = User?.FindFirst("UserId");
+            var userIdClaim = User?.FindFirst("UserId");
 
-            var user = await _userManager.FindByIdAsync(userId.Value);
+            if (userIdClaim == null)
+                return Unauthorized("User ID claim is missing");
+
+            var user = await _userManager.FindByIdAsync(userIdClaim.Value);
+
+            if (user == null)
+                return NotFound("User not found");
 
             return new UserDTO
             {
@@ -55,6 +62,7 @@ namespace Store.Web.Controllers
                 Email = user.Email
             };
         }
+
 
 
     }

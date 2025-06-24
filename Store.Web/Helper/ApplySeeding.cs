@@ -22,8 +22,10 @@ namespace Store.Web.Helper
 
                     var userManager = services.GetRequiredService<UserManager<AppUser>>();
 
-                    await context.Database.MigrateAsync();
-                    
+                    if (context.Database.IsRelational())
+                    {
+                        await context.Database.MigrateAsync();
+                    }
                     await StoreContextSeed.SeedAsync(context, loggerFactory);
 
                     await StoreIdentityContextSeed.SeedUserAsync(userManager);
